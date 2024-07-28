@@ -121,8 +121,11 @@ def style_workbook(file_path):
         ws.auto_filter.ref = ws.dimensions
 
         # Special styling for specific workbook
-        # if os.path.basename(file_path) == "Report_Bibendum_MatthewClark.xlsx":
-            # style_groupage_no_column(ws)
+        extra_styling_reports = [
+            'Report_Berkmann_New.xlsx', "Report_Bibendum_MatthewClark.xlsx"]
+        if os.path.basename(file_path) in extra_styling_reports:
+            style_groupage_no_column(ws)
+            style_progress_status_column(ws)
 
     wb.save(file_path)
     print(f"Styled and saved workbook {file_path}")
@@ -205,6 +208,50 @@ def style_groupage_no_column(ws):
                     color=font_color, bold=True)
                 ws.cell(row, groupage_col_index).fill = PatternFill(
                     start_color=fill_color, end_color=fill_color, fill_type="solid")
+
+
+def style_progress_status_column(ws):
+    # Locate the "Progress Status" column
+    status_col_index = None
+    for col in range(1, ws.max_column + 1):
+        if ws.cell(1, col).value == "Progress Status":
+            status_col_index = col
+            break
+
+    if status_col_index is None:
+        print(f"'Progress Status' column not found in worksheet {ws.title}")
+        return
+
+    # Apply styles based on content
+    for row in range(2, ws.max_row + 1):
+        cell = ws.cell(row, status_col_index)
+        cell_value = str(cell.value).lower() if cell.value else ""
+
+        if 'awaiting ready date' in cell_value:
+            fill_color = 'FF0000'  # Red
+            font_color = 'FFFFFF'  # White
+        elif 'deliver' in cell_value:
+            fill_color = '92d050'  # Green
+            font_color = '000000'  # Black
+        elif 'depart' in cell_value or 'eta' in cell_value:
+            fill_color = '00b0f0'  # Blue
+            font_color = '000000'  # Black
+        elif 'on hold' in cell_value:
+            fill_color = '808080'  # Gray
+            font_color = '000000'  # Black
+        elif 'ready and loading' in cell_value:
+            fill_color = 'e26b0a'  # Orange
+            font_color = '000000'  # Black
+        elif 'ready' in cell_value:
+            fill_color = 'ffff00'  # Yellow
+            font_color = '000000'  # Black
+        else:
+            continue  # No specific styling if none of the conditions are met
+
+        # Apply the styles
+        cell.fill = PatternFill(start_color=fill_color,
+                                end_color=fill_color, fill_type="solid")
+        cell.font = Font(color=font_color, bold=True)
 
 
 # Specify the directory containing your xls files
